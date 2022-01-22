@@ -7,6 +7,7 @@ const { status } = require("express/lib/response");
 const { stringify } = require("querystring");
 const PORT = 3001;
 const app = express();
+const uniqid = require("uniqid");
 
 //Middleware
 app.use(express.json());
@@ -32,14 +33,21 @@ app.get("/api/notes", (req, res) => {
   });
 });
 
+const specialId = uniqid.process();
+function addUniqid(data, id) {
+  this.id = specialId;
+}
+
 app.post("/api/notes", (req, res) => {
   console.log(req.body);
+  addUniqid(req.body.id, specialId);
   fs.readFile("./db/db.json", (err, data) => {
     if (err) {
       res.status(500).send(err);
     }
     const parsedData = JSON.parse(data);
-    // console.log(JSON.parse(data));
+
+    // console.log(parsedData);
     // console.log(typeof parsedData);
     parsedData.push(req.body);
     fs.writeFile("./db/db.json", JSON.stringify(parsedData), (err) => {
@@ -50,6 +58,7 @@ app.post("/api/notes", (req, res) => {
     });
   });
 });
+
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "./public/index.html"));
 });
